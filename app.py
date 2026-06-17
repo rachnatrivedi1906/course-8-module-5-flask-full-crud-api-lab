@@ -17,16 +17,23 @@ events = [
     Event(2, "Python Workshop")
 ]
 
+
+def get_json_payload():
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return None
+    return data
+
 # TODO: Task 1 - Define the Problem
 # Create a new event from JSON input
 @app.route("/events", methods=["POST"])
 def create_event():
-    data = request.get_json()
+    data = get_json_payload()
     if not data:
         return jsonify({"error": "Invalid JSON payload"}), 400
 
     title = data.get("title")
-    if not title or not isinstance(title, str):
+    if not isinstance(title, str) or not title.strip():
         return jsonify({"error": "'title' is required and must be a string"}), 400
 
     next_id = max((e.id for e in events), default=0) + 1
@@ -39,12 +46,12 @@ def create_event():
 # Update the title of an existing event
 @app.route("/events/<int:event_id>", methods=["PATCH"])
 def update_event(event_id):
-    data = request.get_json()
+    data = get_json_payload()
     if not data:
         return jsonify({"error": "Invalid JSON payload"}), 400
 
     title = data.get("title")
-    if title is None or not isinstance(title, str):
+    if not isinstance(title, str) or not title.strip():
         return jsonify({"error": "'title' is required and must be a string"}), 400
 
     for e in events:
